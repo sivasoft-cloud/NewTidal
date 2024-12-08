@@ -25,7 +25,13 @@ if (searchForm) {
 
 async function searchTidal(query, type = 's', quality = 'HI_RES') {
     try {
-        const response = await fetchWithCORS(`${API_BASE}/search/?${type}=${encodeURIComponent(query)}&quality=${quality}`);
+        const url = `${CORS_PROXY}${API_BASE}/search/?${type}=${encodeURIComponent(query)}&quality=${quality}`;
+        const response = await fetch(url, {
+            headers: {
+                'Accept': 'application/json',
+                'Origin': window.location.origin
+            }
+        });
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -37,26 +43,6 @@ async function searchTidal(query, type = 's', quality = 'HI_RES') {
     } catch (error) {
         console.error("Search failed:", error);
         throw new Error("Failed to fetch search results. Please try again later.");
-    }
-}
-
-async function fetchWithCORS(url) {
-    try {
-        const response = await fetch(url, {
-            headers: {
-                'Accept': 'application/json',
-                'Origin': window.location.origin
-            }
-        });
-        return response;
-    } catch (error) {
-        console.error("CORS error, trying with proxy:", error.message);
-        return await fetch(CORS_PROXY + url, {
-            headers: {
-                'Accept': 'application/json',
-                'Origin': window.location.origin
-            }
-        });
     }
 }
 
