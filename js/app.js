@@ -7,7 +7,11 @@ document.getElementById('searchForm').addEventListener('submit', async (e) => {
     showLoading(true);
     try {
         const results = await searchTidal(query, 's');
-        displayResults(results);
+        if (results.length === 0) {
+            displayError("No results found.");
+        } else {
+            displayResults(results);
+        }
     } catch (error) {
         displayError(error.message);
     } finally {
@@ -25,7 +29,6 @@ async function searchTidal(query, type = 's') {
         const data = await response.json();
         return data.items || [];
     } catch (error) {
-        console.error("Search failed:", error);
         throw new Error("Failed to fetch search results. Please try again later.");
     }
 }
@@ -33,11 +36,6 @@ async function searchTidal(query, type = 's') {
 function displayResults(results) {
     const resultsContainer = document.getElementById('results');
     resultsContainer.innerHTML = '';
-
-    if (results.length === 0) {
-        resultsContainer.innerHTML = '<p>No results found.</p>';
-        return;
-    }
 
     results.forEach(item => {
         const resultItem = document.createElement('div');
