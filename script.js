@@ -5,11 +5,31 @@ document.getElementById('searchForm').addEventListener('submit', async (e) => {
     const query = document.getElementById('searchQuery').value;
     const type = document.getElementById('searchType').value;
     const quality = document.getElementById('searchQuality').value;
-
+    
     showLoading(true);
     try {
-        const results = await searchTidal(query, type, quality);
-        displayResults(results, type);
+        let url;
+        switch(type) {
+            case 's':
+                url = `${API_BASE}/search/?s=${encodeURIComponent(query)}`;
+                break;
+            case 'a':
+                url = `${API_BASE}/search/?a=${encodeURIComponent(query)}`;
+                break;
+            case 'al':
+                url = `${API_BASE}/search/?al=${encodeURIComponent(query)}`;
+                break;
+            case 'v':
+                url = `${API_BASE}/search/?v=${encodeURIComponent(query)}`;
+                break;
+            case 'p':
+                url = `${API_BASE}/search/?p=${encodeURIComponent(query)}`;
+                break;
+            default:
+                throw new Error("Unsupported search type");
+        }
+        const results = await fetch(url).then(res => res.json());
+        displayResults(results.items, type);
     } catch (error) {
         displayError(error.message);
     } finally {
@@ -17,43 +37,57 @@ document.getElementById('searchForm').addEventListener('submit', async (e) => {
     }
 });
 
-async function fetchData(url) {
+async function searchTidal(query, type = 's', quality = 'HI_RES') {
     try {
-        const response = await fetch(url, {
-            headers: {
-                'Accept': 'application/json',
-                'Origin': window.location.origin
-            }
-        });
-
+        let url;
+        if (type === 's') {
+            url = `${API_BASE}/search/?s=${encodeURIComponent(query)}`;
+        } else if (type === 'a') {
+            url = `${API_BASE}/search/?a=${encodeURIComponent(query)}`;
+        } else if (type === 'al') {
+            url = `${API_BASE}/search/?al=${encodeURIComponent(query)}`;
+        } else if (type === 'v') {
+            url = `${API_BASE}/search/?v=${encodeURIComponent(query)}`;
+        } else if (type === 'p') {
+            url = `${API_BASE}/search/?p=${encodeURIComponent(query)}`;
+        } else {
+            throw new Error("Unsupported search type");
+        }
+        const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        return await response.json();
+        const data = await response.json();
+        return data.items || [];
     } catch (error) {
-        console.error("API call failed:", error);
-        throw new Error("Failed to fetch data. Please try again later.");
+        console.error("Search failed:", error);
+        throw new Error("Failed to fetch search results. Please try again later.");
     }
 }
 
-async function searchTidal(query, type = 's', quality = 'HI_RES') {
-    const url = `${API_BASE}/search/?${type}=${encodeURIComponent(query)}`;
-    return await fetchData(url);
-}
-
 async function getTrackDetails(trackId, quality = 'HI_RES') {
-    const url = `${API_BASE}/track/?id=${trackId}&quality=${quality}`;
-    return await fetchData(url);
+    const response = await fetch(`${API_BASE}/track/?id=${trackId}&quality=${quality}`);
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
 }
 
 async function getCoverImage(id) {
-    const data = await fetchData(`${API_BASE}/cover/?id=${id}`);
+    const response = await fetch(`${API_BASE}/cover/?id=${id}`);
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
     return data.url;
 }
 
 async function getAlbumDetails(albumId) {
-    const url = `${API_BASE}/album/?id=${albumId}`;
-    return await fetchData(url);
+    const response = await fetch(`${API_BASE}/album/?id=${albumId}`);
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
 }
 
 function displayResults(results, type) {
@@ -68,7 +102,7 @@ function displayResults(results, type) {
     results.forEach(item => {
         const resultItem = document.createElement('div');
         resultItem.className = 'result-item';
-
+        
         let content = `
             <h2>${item.title || item.name}</h2>
         `;
@@ -153,10 +187,21 @@ function displayDetailView(type, details, coverUrl) {
     } else if (type === 'al') {
         content += `
             <p><strong>Artist:</strong> ${details.artist.name}</p>
-            <p><strong>Number of Tracks:</strong> ${details.numberOfTracks}</p>
             <p><strong>Release Date:</strong> ${details.releaseDate}</p>
+            <p><strong>Number of Tracks:</strong> ${details.tracks.length}</p>
         `;
     }
 
-    if (details.copyright) {
-        content += `<p><strong>Copyright:</strong> ${details.copyright}</p>`;
+    detailView.innerHTML = content;
+    resultsContainer.appendChild(detailView);
+}
+
+function showLoading(isLoading) {
+    const loadingElement = document.getElementById('loading');
+    loadingElement.style.display = isLoading ? 'block' : 'none';
+}
+
+function displayError(message) {
+    const resultsContainer = document.getElementById('results');
+    resultsContainer.innerHTML = `<p class="error">${message}</p>`;
+}
