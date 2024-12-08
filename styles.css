@@ -1,17 +1,17 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f8f9fa;
+    line-height: 1.6;
+    color: #333;
     margin: 0;
     padding: 0;
+    background-color: #f4f4f4;
 }
 
 .container {
-    max-width: 800px;
-    margin: 50px auto;
+    width: 80%;
+    margin: auto;
+    overflow: hidden;
     padding: 20px;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 h1 {
@@ -19,59 +19,50 @@ h1 {
 }
 
 form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    background: #fff;
+    padding: 20px;
     margin-bottom: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-input, select, button {
+input[type="text"], select, button {
     width: 100%;
     padding: 10px;
+    margin-bottom: 10px;
     border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
+    border-radius: 5px;
 }
 
 button {
-    background-color: #007bff;
-    color: white;
+    background: #333;
+    color: #fff;
     border: none;
     cursor: pointer;
 }
 
 button:hover {
-    background-color: #0056b3;
-}
-
-.loading {
-    display: none;
-    text-align: center;
-    font-size: 18px;
-    color: #555;
-}
-
-.results {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
+    background: #555;
 }
 
 .result-item {
-    width: calc(33.333% - 20px);
-    background-color: #e9ecef;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.result-item h2 {
-    font-size: 18px;
-    margin-bottom: 10px;
+    background: #fff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .error {
-    color: red;
+    color: #f44336;
+    background-color: #ffdddd;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.loading {
     text-align: center;
+    font-size: 18px;
+    margin-top: 20px;
+    display: none;
 }
