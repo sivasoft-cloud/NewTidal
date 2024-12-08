@@ -1,106 +1,63 @@
 // /static/script.js
-const API_BASE = "https://tidal.401658.xyz";
-const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
+document.addEventListener("DOMContentLoaded", () => {
+    const searchForm = document.getElementById('searchForm');
+    if (searchForm) {
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(searchForm);
+            const data = {
+                searchQuery: formData.get('searchQuery'),
+                searchType: formData.get('searchType'),
+                searchQuality: formData.get('searchQuality')
+            };
 
-const searchForm = document.getElementById('searchForm');
-if (searchForm) {
-    searchForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const query = document.getElementById('searchQuery').value;
-        const type = document.getElementById('searchType').value;
-        const quality = document.getElementById('searchQuality').value;
-
-        showLoading(true);
-        try {
-            const results = await searchTidal(query, type, quality);
-            displayResults(results, type);
-        } catch (error) {
-            displayError(error.message);
-        } finally {
-            showLoading(false);
-        }
-    });
-}
-
-async function searchTidal(query, type = 's', quality = 'HI_RES') {
-    try {
-        const response = await fetchWithCORS(`${API_BASE}/search/?${type}=${encodeURIComponent(query)}&quality=${quality}`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        if (!data || !Array.isArray(data.items)) {
-            throw new Error("Invalid response format");
-        }
-        return data.items;
-    } catch (error) {
-        console.error("Search failed:", error);
-        throw new Error("Failed to fetch search results. Please try again later.");
-    }
-}
-
-async function fetchWithCORS(url) {
-    try {
-        const response = await fetch(url, {
-            headers: {
-                'Accept': 'application/json',
-                'Origin': window.location.origin
-            }
-        });
-        return response;
-    } catch (error) {
-        console.error("CORS error, trying with proxy:", error);
-        return await fetch(CORS_PROXY + url, {
-            headers: {
-                'Accept': 'application/json',
-                'Origin': window.location.origin
+            showLoading(true);
+            try {
+                const response = await fetch('/', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+                const results = await response.json();
+                displayResults(results, formData.get('searchType'));
+            } catch (error) {
+                displayError(error.message);
+            } finally {
+                showLoading(false);
             }
         });
     }
-}
 
-function displayResults(results, type) {
-    const resultsContainer = document.getElementById('results');
-    if (!resultsContainer) {
-        console.error('Results container not found');
-        return;
-    }
-    resultsContainer.innerHTML = '';
+    function displayResults(results, type) {
+        const resultsContainer = document.getElementById('results');
+        resultsContainer.innerHTML = '';
 
-    if (results.length === 0) {
-        resultsContainer.innerHTML = '<p>No results found.</p>';
-        return;
-    }
+        if (results.length === 0) {
+            resultsContainer.innerHTML = '<p>No results found.</p>';
+            return;
+        }
 
-    results.forEach(item => {
-        const resultItem = document.createElement('div');
-        resultItem.className = 'result-item';
+        results.forEach(item => {
+            const resultItem = document.createElement('div');
+            resultItem.className = 'result-item';
 
-        let content = `
-            <h2>${item.title || item.name}</h2>
-        `;
-
-        if (type === 's') {
-            content += `
+            let content = `
+                <h2>${item.title || item.name}</h2>
                 <p>Artist: ${item.artist?.name || 'N/A'}</p>
                 <p>Album: ${item.album?.title || 'N/A'}</p>
-                <p>Duration: ${formatDuration(item.duration)}</p>
+                <p>Duration: ${item.duration}</p>
                 <p>Quality: ${item.audioQuality || 'N/A'}</p>
                 ${item.explicit ? '<p class="explicit">Explicit</p>' : ''}
+                <button onclick="viewDetails('${type}', ${item.id})">View Details</button>
             `;
-        } else if (type === 'a') {
-            content += '<p>Artist</p>';
-        } else if (type === 'al') {
-            content += `<p>Album by ${item.artist?.name || 'N/A'}</p>`;
-        } else if (type === 'v') {
-            content += '<p>Video</p>';
-        } else if (type === 'p') {
-            content += '<p>Playlist</p>';
-        }
 
-        content += `<button onclick="viewDetails('${type}', ${item.id})">View Details</button>`;
-
-        resultItem.innerHTML = content;
-        resultsContainer.appendChild(resultItem);
-    });
-}
+            resultItem.innerHTML = content;
+            resultsContainer.appendChild(resultItem);
+        });
+    }
+});
