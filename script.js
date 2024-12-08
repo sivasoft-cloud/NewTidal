@@ -7,7 +7,7 @@ document.getElementById('searchForm').addEventListener('submit', async (e) => {
     showLoading(true);
     try {
         const results = await searchTidal(query, 's', 'HI_RES');
-        displaySongResults(results);
+        saveResultsToJSON(results);
     } catch (error) {
         displayError(error.message);
     } finally {
@@ -35,35 +35,17 @@ async function searchTidal(query, type = 's', quality = 'HI_RES') {
     }
 }
 
-function displaySongResults(results) {
-    const resultsContainer = document.getElementById('results');
-    resultsContainer.innerHTML = '';
-
-    if (results.length === 0) {
-        resultsContainer.innerHTML = '<p>No results found.</p>';
-        return;
-    }
-
-    results.forEach(song => {
-        const resultItem = document.createElement('div');
-        resultItem.className = 'result-item';
-        resultItem.innerHTML = `
-            <h2>${song.title}</h2>
-            <p>Artist: ${song.artist.name}</p>
-            <p>Album: ${song.album.title}</p>
-            <p>Duration: ${formatDuration(song.duration)}</p>
-            <p>Quality: ${song.audioQuality}</p>
-            <p><a href="${song.url}" target="_blank">Listen on Tidal</a></p>
-        `;
-        resultsContainer.appendChild(resultItem);
-    });
-}
-
-function formatDuration(duration) {
-    if (!duration) return 'N/A';
-    const minutes = Math.floor(duration / 60);
-    const seconds = duration % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+function saveResultsToJSON(results) {
+    const jsonData = JSON.stringify(results, null, 2); // Pretty print JSON with 2-space indentation
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'search_results.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 }
 
 function showLoading(isLoading) {
