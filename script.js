@@ -1,12 +1,11 @@
 const API_BASE = "https://tidal.401658.xyz";
-const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
 
 document.getElementById('searchForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const query = document.getElementById('searchQuery').value;
     const type = document.getElementById('searchType').value;
     const quality = document.getElementById('searchQuality').value;
-
+    
     showLoading(true);
     try {
         const results = await searchTidal(query, type, quality);
@@ -20,13 +19,20 @@ document.getElementById('searchForm').addEventListener('submit', async (e) => {
 
 async function searchTidal(query, type = 's', quality = 'HI_RES') {
     try {
-        const response = await fetchWithCORS(`${API_BASE}/search/?${type}=${encodeURIComponent(query)}`);
+        const response = await fetch(`${API_BASE}/search/?${type}=${encodeURIComponent(query)}`, {
+            headers: {
+                'Accept': 'application/json',
+                'Origin': window.location.origin
+            }
+        });
+
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
         return data.items || [];
     } catch (error) {
+        console.error("Search failed:", error);
         throw new Error("Failed to fetch search results. Please try again later.");
     }
 }
@@ -46,26 +52,19 @@ async function getAlbumDetails(albumId) {
 
 async function fetchWithErrorHandling(url) {
     try {
-        const response = await fetchWithCORS(url);
+        const response = await fetch(url, {
+            headers: {
+                'Accept': 'application/json',
+                'Origin': window.location.origin
+            }
+        });
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         return await response.json();
     } catch (error) {
+        console.error("API call failed:", error);
         throw new Error("Failed to fetch data. Please try again later.");
-    }
-}
-
-async function fetchWithCORS(url) {
-    try {
-        const response = await fetch(url, {
-            headers: { 'Accept': 'application/json', 'Origin': window.location.origin }
-        });
-        return response;
-    } catch {
-        return await fetch(CORS_PROXY + url, {
-            headers: { 'Accept': 'application/json', 'Origin': window.location.origin }
-        });
     }
 }
 
@@ -81,8 +80,10 @@ function displayResults(results, type) {
     results.forEach(item => {
         const resultItem = document.createElement('div');
         resultItem.className = 'result-item';
-
-        let content = `<h2>${item.title || item.name}</h2>`;
+        
+        let content = `
+            <h2>${item.title || item.name}</h2>
+        `;
 
         if (type === 's') {
             content += `
@@ -103,6 +104,7 @@ function displayResults(results, type) {
         }
 
         content += `<button onclick="viewDetails('${type}', ${item.id})">View Details</button>`;
+
         resultItem.innerHTML = content;
         resultsContainer.appendChild(resultItem);
     });
@@ -118,7 +120,8 @@ function formatDuration(duration) {
 async function viewDetails(type, id) {
     showLoading(true);
     try {
-        let details, coverUrl;
+        let details;
+        let coverUrl;
 
         if (type === 's') {
             details = await getTrackDetails(id);
@@ -157,10 +160,26 @@ function displayDetailView(type, details, coverUrl) {
             <p><strong>Duration:</strong> ${formatDuration(details.duration)}</p>
             <p><strong>Quality:</strong> ${details.audioQuality}</p>
             ${details.explicit ? '<p><strong>Explicit</strong></p>' : ''}
+            <p><strong>Audio Modes:</strong> ${details.audioModes.join(', ')}</p>
+        `;
+    } else if (type === 'al') {
+        content += `
+            <p><strong>Artist:</strong> ${details.artist.name}</p>
+            <p><strong>Number of Tracks:</strong> ${details.numberOfTracks}</p>
+            <p><strong>Release Date:</strong> ${details.releaseDate}</p>
         `;
     }
 
-    content += `<button onclick="goBackToSearch()">Back to Search</button>`;
+    if (details.copyright) {
+        content += `<p><strong>Copyright:</strong> ${details.copyright}</p>`;
+    }
+
+    content += `
+        <button onclick="goBackToSearch()">Back to Search</button>
+        ${details.url ? `<a href="${details.url}" target="_blank" rel="noopener noreferrer"><button>Open in Tidal</button></a>` : ''}
+        ${details.OriginalTrackUrl ? `<a href="${details.OriginalTrackUrl}" download><button>Download Original Track</button></a>` : ''}
+    `;
+
     detailView.innerHTML = content;
     resultsContainer.appendChild(detailView);
 }
