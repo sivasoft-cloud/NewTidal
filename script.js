@@ -1,92 +1,89 @@
 const API_BASE = "https://tidal.401658.xyz";
-const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
 
-document.addEventListener("DOMContentLoaded", () => {
-    const searchForm = document.getElementById("searchForm");
-    const searchQueryInput = document.getElementById("searchQuery");
-    const searchTypeSelect = document.getElementById("searchType");
-    const searchQualitySelect = document.getElementById("searchQuality");
-    const resultsContainer = document.getElementById("results");
-    const loadingIndicator = document.getElementById("loading");
-
-    // Function to handle search
-    async function handleSearch(event) {
-        event.preventDefault();
-
-        const query = searchQueryInput.value.trim();
-        const type = searchTypeSelect.value;
-        const quality = searchQualitySelect.value;
-
-        if (!query) {
-            displayError("Please enter a search query.");
-            return;
-        }
-
-        loadingIndicator.classList.remove("hidden");
-        resultsContainer.innerHTML = "";
-
-        try {
-            const response = await fetch(
-                `${CORS_PROXY}${API_BASE}/search?query=${encodeURIComponent(query)}&type=${type}&quality=${quality}`
-            );
-
-            if (!response.ok) {
-                throw new Error("Failed to fetch data. Please try again.");
-            }
-
-            const data = await response.json();
-            displayResults(data);
-        } catch (error) {
-            displayError(error.message);
-        } finally {
-            loadingIndicator.classList.add("hidden");
-        }
+document.getElementById('searchForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const query = document.getElementById('searchQuery').value;
+    const type = document.getElementById('searchType').value;
+    const quality = document.getElementById('searchQuality').value;
+    
+    showLoading(true);
+    try {
+        const results = await searchTidal(query, type, quality);
+        displayResults(results, type);
+    } catch (error) {
+        displayError(error.message);
+    } finally {
+        showLoading(false);
     }
-
-    // Function to display search results
-    function displayResults(data) {
-        resultsContainer.innerHTML = "";
-
-        if (data.length === 0) {
-            resultsContainer.innerHTML = "<p>No results found.</p>";
-            return;
-        }
-
-        data.forEach((item) => {
-            const resultDiv = document.createElement("div");
-            resultDiv.classList.add("result-item");
-
-            const title = item.title || "No Title Available";
-            const artist = item.artist || "Unknown Artist";
-            const album = item.album || "Unknown Album";
-            const quality = item.quality || "Unknown Quality";
-
-            resultDiv.innerHTML = `
-                <h2>${title}</h2>
-                <p><strong>Artist:</strong> ${artist}</p>
-                <p><strong>Album:</strong> ${album}</p>
-                <p><strong>Quality:</strong> ${quality}</p>
-                <button onclick="playSong('${item.url}')">Play Song</button>
-            `;
-
-            resultsContainer.appendChild(resultDiv);
-        });
-    }
-
-    // Function to handle errors
-    function displayError(message) {
-        resultsContainer.innerHTML = `<p class="error">${message}</p>`;
-    }
-
-    // Function to play a song
-    window.playSong = (url) => {
-        if (url) {
-            window.open(url, "_blank");
-        } else {
-            alert("No URL available for this song.");
-        }
-    };
-
-    // Attach event listener
-    searchForm.addEventListener("submit", handleSearch);
 });
+
+async function searchTidal(query, type = 's', quality = 'HI_RES') {
+    try {
+        const response = await fetch(`${API_BASE}/search/?${type}=${encodeURIComponent(query)}`, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data.items || [];
+    } catch (error) {
+        console.error("Search failed:", error);
+        throw new Error("Failed to fetch search results. Please try again later.");
+    }
+}
+
+async function getTrackDetails(trackId, quality = 'HI_RES') {
+    try {
+        const response = await fetch(`${API_BASE}/track/?id=${trackId}&quality=${quality}`, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Track details fetch failed:", error);
+        throw new Error("Failed to fetch track details. Please try again later.");
+    }
+}
+
+async function getCoverImage(id) {
+    try {
+        const response = await fetch(`${API_BASE}/cover/?id=${id}`, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return (await response.json()).url;
+    } catch (error) {
+        console.error("Cover image fetch failed:", error);
+        throw new Error("Failed to fetch cover image. Please try again later.");
+    }
+}
+
+async function getAlbumDetails(albumId) {
+    try {
+        const response = await fetch(`${API_BASE}/album/?id=${albumId}`, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Album details fetch failed:", error);
+        throw new Error("Failed to fetch album details. Please try again later.");
+    }
+}
+
+// (The rest of your code remains the same as provided)
