@@ -1,7 +1,0 @@
-.DS_Store
-.env
-venv/
-*.pyc
-*.log
-*.txt
-*.csv
