@@ -160,28 +160,3 @@ function displayDetailView(type, details, coverUrl) {
 
     if (details.copyright) {
         content += `<p><strong>Copyright:</strong> ${details.copyright}</p>`;
-    }
-
-    content += `
-        <button onclick="goBackToSearch()">Back to Search</button>
-        ${details.url ? `<a href="${details.url}" target="_blank" rel="noopener noreferrer"><button>Open in Tidal</button></a>` : ''}
-        ${details.OriginalTrackUrl ? `<a href="${details.OriginalTrackUrl}" download><button>Download Original Track</button></a>` : ''}
-    `;
-
-    detailView.innerHTML = content;
-    resultsContainer.appendChild(detailView);
-}
-
-function goBackToSearch() {
-    document.getElementById('results').innerHTML = '';
-}
-
-function displayError(message) {
-    const resultsContainer = document.getElementById('results');
-    resultsContainer.innerHTML = `<div class="error">${message}</div>`;
-}
-
-function showLoading(isLoading) {
-    const loadingElement = document.getElementById('loading');
-    loadingElement.style.display = isLoading ? 'block' : 'none';
-}
