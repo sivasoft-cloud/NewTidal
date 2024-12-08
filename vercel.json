@@ -2,9 +2,14 @@
   "build": {
     "env": {
       "API_BASE": "https://tidal.401658.xyz"
+    },
+    "framework": {
+      "name": "@vercel/python",
+      "command": "python app.py",
+      "install": "pip install -r requirements.txt"
     }
   },
   "routes": [
-    { "src": "/(.*)", "dest": "/index.html" }
+    { "src": "/(.*)", "dest": "/app.py" }
   ]
 }
