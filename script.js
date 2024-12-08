@@ -1,149 +1,107 @@
 const API_BASE = "https://tidal.401658.xyz";
+const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
 
-document.getElementById('searchForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const query = document.getElementById('searchQuery').value;
-    
-    showLoading(true);
-    try {
-        const results = await searchTidal(query);
-        if (results.length === 0) {
-            displayError("No results found.");
-        } else {
-            displayResults(results);
+const searchForm = document.getElementById('searchForm');
+if (searchForm) {
+    searchForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const query = document.getElementById('searchQuery').value;
+        const type = document.getElementById('searchType').value;
+        const quality = document.getElementById('searchQuality').value;
+        
+        showLoading(true);
+        try {
+            const results = await searchTidal(query, type, quality);
+            displayResults(results, type);
+        } catch (error) {
+            displayError(error.message);
+        } finally {
+            showLoading(false);
         }
-    } catch (error) {
-        displayError(error.message);
-    } finally {
-        showLoading(false);
-    }
-});
+    });
+} else {
+    console.error('Search form not found');
+}
 
-async function searchTidal(query) {
+async function searchTidal(query, type = 's', quality = 'HI_RES') {
     try {
-        const url = `${API_BASE}/search/?s=${encodeURIComponent(query)}`;
-        const response = await fetch(url);
+        const response = await fetchWithCORS(`${API_BASE}/search/?${type}=${encodeURIComponent(query)}&quality=${quality}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        return data.items || [];
+        if (!data || !Array.isArray(data.items)) {
+            throw new Error("Invalid response format");
+        }
+        return data.items;
     } catch (error) {
+        console.error("Search failed:", error);
         throw new Error("Failed to fetch search results. Please try again later.");
     }
 }
 
-async function fetchTrack(id, quality) {
+async function fetchWithCORS(url) {
     try {
-        const url = `${API_BASE}/track/?id=${id}&quality=${quality}`;
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        return data;
+        const response = await fetch(url, {
+            headers: {
+                'Accept': 'application/json',
+                'Origin': window.location.origin
+            }
+        });
+        return response;
     } catch (error) {
-        throw new Error("Failed to fetch track. Please try again later.");
+        console.error("CORS error, trying with proxy:", error);
+        return await fetch(CORS_PROXY + url, {
+            headers: {
+                'Accept': 'application/json',
+                'Origin': window.location.origin
+            }
+        });
     }
 }
 
-async function fetchCover(id, query) {
-    try {
-        const url = id ? `${API_BASE}/cover/?id=${id}` : `${API_BASE}/cover/?q=${encodeURIComponent(query)}`;
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        throw new Error("Failed to fetch cover. Please try again later.");
-    }
-}
-
-async function fetchSong(query, quality) {
-    try {
-        const url = `${API_BASE}/song/?q=${encodeURIComponent(query)}&quality=${quality}`;
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        throw new Error("Failed to fetch song. Please try again later.");
-    }
-}
-
-async function fetchAlbum(id) {
-    try {
-        const url = `${API_BASE}/album/?id=${id}`;
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        throw new Error("Failed to fetch album. Please try again later.");
-    }
-}
-
-async function fetchPlaylist(id) {
-    try {
-        const url = `${API_BASE}/playlist/?id=${id}`;
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        throw new Error("Failed to fetch playlist. Please try again later.");
-    }
-}
-
-function displayResults(results) {
+function displayResults(results, type) {
     const resultsContainer = document.getElementById('results');
+    if (!resultsContainer) {
+        console.error('Results container not found');
+        return;
+    }
     resultsContainer.innerHTML = '';
+
+    if (results.length === 0) {
+        resultsContainer.innerHTML = '<p>No results found.</p>';
+        return;
+    }
 
     results.forEach(item => {
         const resultItem = document.createElement('div');
         resultItem.className = 'result-item';
         
-        const content = `
-            <h2>${item.title}</h2>
-            <p>Artist: ${item.artist.name}</p>
-            <p>Album: ${item.album.title}</p>
-            <p>Duration: ${formatDuration(item.duration)}</p>
-            <p>Quality: ${item.audioQuality}</p>
-            ${item.explicit ? '<p class="explicit">Explicit</p>' : ''}
-            <a href="${item.url}" target="_blank">Listen on Tidal</a>
+        let content = `
+            <h2>${item.title || item.name}</h2>
         `;
+
+        if (type === 's') {
+            content += `
+                <p>Artist: ${item.artist?.name || 'N/A'}</p>
+                <p>Album: ${item.album?.title || 'N/A'}</p>
+                <p>Duration: ${formatDuration(item.duration)}</p>
+                <p>Quality: ${item.audioQuality || 'N/A'}</p>
+                ${item.explicit ? '<p class="explicit">Explicit</p>' : ''}
+            `;
+        } else if (type === 'a') {
+            content += '<p>Artist</p>';
+        } else if (type === 'al') {
+            content += `<p>Album by ${item.artist?.name || 'N/A'}</p>`;
+        } else if (type === 'v') {
+            content += '<p>Video</p>';
+        } else if (type === 'p') {
+            content += '<p>Playlist</p>';
+        }
+
+        content += `<button onclick="viewDetails('${type}', ${item.id})">View Details</button>`;
 
         resultItem.innerHTML = content;
         resultsContainer.appendChild(resultItem);
     });
-}
-
-function formatDuration(duration) {
-    if (!duration) return 'N/A';
-    const minutes = Math.floor(duration / 60);
-    const seconds = duration % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-}
-
-function showLoading(show) {
-    const loadingIndicator = document.getElementById('loading');
-    if (show) {
-        loadingIndicator.style.display = 'block';
-    } else {
-        loadingIndicator.style.display = 'none';
-    }
-}
-
-function displayError(message) {
-    const errorContainer = document.getElementById('error');
-    errorContainer.textContent = message;
-    errorContainer.style.display = 'block';
 }
