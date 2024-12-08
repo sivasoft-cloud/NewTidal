@@ -3,21 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music Download Website</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <title>Tidal Music Search</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="container">
-        <h1>Music Search</h1>
+    <div class="container">
+        <h1>Tidal Music Search</h1>
         <form id="searchForm">
-            <input type="text" id="searchQuery" placeholder="Enter song, artist, album or playlist name...">
+            <input type="text" id="searchQuery" placeholder="Enter your search query" required>
+            <select id="searchType">
+                <option value="s">Song</option>
+                <option value="a">Artist</option>
+                <option value="al">Album</option>
+                <option value="v">Video</option>
+                <option value="p">Playlist</option>
+            </select>
+            <select id="searchQuality">
+                <option value="HI_RES_LOSSLESS">Hi-Res Lossless</option>
+                <option value="HI_RES">Hi-Res</option>
+                <option value="LOSSLESS">Lossless</option>
+                <option value="HIGH">High</option>
+                <option value="LOW">Low</option>
+            </select>
             <button type="submit">Search</button>
         </form>
-        <div id="loading" style="display: none;">Loading...</div>
-        <div id="error" style="display: none; color: red;"></div>
+        <div id="error" class="error"></div>
         <div id="results"></div>
     </div>
-
-    <script src="js/app.js"></script>
+    <script src="script.js" defer></script>
 </body>
 </html>
+
