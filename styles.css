@@ -16,7 +16,6 @@ body {
 
 h1 {
     text-align: center;
-    color: #333;
 }
 
 form {
@@ -54,34 +53,11 @@ button:hover {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.result-item h2 {
-    margin-top: 0;
-}
-
-.result-item p {
-    margin: 5px 0;
-}
-
-.result-item button {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 5px;
-}
-
 .error {
+    color: #f44336;
     background-color: #ffdddd;
-    border-left: 6px solid #f44336;
-    margin-bottom: 15px;
     padding: 10px;
-    color: #333;
+    border-radius: 5px;
 }
 
 .loading {
@@ -90,34 +66,3 @@ button:hover {
     margin-top: 20px;
     display: none;
 }
-
-.detail-view {
-    background: #fff;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.detail-view img {
-    max-width: 100%;
-    height: auto;
-    margin-bottom: 20px;
-}
-
-@media (min-width: 768px) {
-    form {
-        display: flex;
-        justify-content: space-between;
-    }
-
-    input[type="text"], select, button {
-        width: auto;
-        margin-bottom: 0;
-    }
-
-    input[type="text"] {
-        flex-grow: 1;
-        margin-right: 10px;
-    }
-}
-
