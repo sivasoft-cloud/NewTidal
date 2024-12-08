@@ -2,8 +2,7 @@
   "build": {
     "env": {
       "API_BASE": "https://tidal.401658.xyz"
-    },
-    "install": "pip install -r requirements.txt"
+    }
   },
   "routes": [
     { "src": "/(.*)", "dest": "/app.py" }
