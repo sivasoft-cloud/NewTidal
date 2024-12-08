@@ -1,7 +1,6 @@
-const API_BASE = "https://tidal.401658.xyz";
-const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
-
+const API_BASE = "http://localhost:5000"; // Adjust this to your server address if not localhost
 const searchForm = document.getElementById('searchForm');
+
 if (searchForm) {
     searchForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -25,21 +24,15 @@ if (searchForm) {
 
 async function searchTidal(query, type = 's', quality = 'HI_RES') {
     try {
-        const url = `${CORS_PROXY}${API_BASE}/search/?${type}=${encodeURIComponent(query)}&quality=${quality}`;
-        const response = await fetch(url, {
-            headers: {
-                'Accept': 'application/json',
-                'Origin': window.location.origin
-            }
-        });
+        const response = await fetch(`${API_BASE}/search?query=${encodeURIComponent(query)}&type=${type}&quality=${quality}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        if (!data || !Array.isArray(data.items)) {
+        if (!data || !Array.isArray(data)) {
             throw new Error("Invalid response format");
         }
-        return data.items;
+        return data;
     } catch (error) {
         console.error("Search failed:", error);
         throw new Error("Failed to fetch search results. Please try again later.");
