@@ -1,6 +1,8 @@
-const API_BASE = "http://localhost:5000"; // Adjust this to your server address if not localhost
-const searchForm = document.getElementById('searchForm');
+// /static/script.js
+const API_BASE = "https://tidal.401658.xyz";
+const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
 
+const searchForm = document.getElementById('searchForm');
 if (searchForm) {
     searchForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -18,24 +20,42 @@ if (searchForm) {
             showLoading(false);
         }
     });
-} else {
-    console.error('Search form not found');
 }
 
 async function searchTidal(query, type = 's', quality = 'HI_RES') {
     try {
-        const response = await fetch(`${API_BASE}/search?query=${encodeURIComponent(query)}&type=${type}&quality=${quality}`);
+        const response = await fetchWithCORS(`${API_BASE}/search/?${type}=${encodeURIComponent(query)}&quality=${quality}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        if (!data || !Array.isArray(data)) {
+        if (!data || !Array.isArray(data.items)) {
             throw new Error("Invalid response format");
         }
-        return data;
+        return data.items;
     } catch (error) {
         console.error("Search failed:", error);
         throw new Error("Failed to fetch search results. Please try again later.");
+    }
+}
+
+async function fetchWithCORS(url) {
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'Accept': 'application/json',
+                'Origin': window.location.origin
+            }
+        });
+        return response;
+    } catch (error) {
+        console.error("CORS error, trying with proxy:", error);
+        return await fetch(CORS_PROXY + url, {
+            headers: {
+                'Accept': 'application/json',
+                'Origin': window.location.origin
+            }
+        });
     }
 }
 
@@ -83,27 +103,4 @@ function displayResults(results, type) {
         resultItem.innerHTML = content;
         resultsContainer.appendChild(resultItem);
     });
-}
-
-function showLoading(show) {
-    const loadingIndicator = document.querySelector('.loading');
-    if (loadingIndicator) {
-        loadingIndicator.style.display = show ? 'inline-block' : 'none';
-    } else {
-        console.error('Loading indicator not found');
-    }
-}
-
-function displayError(message) {
-    const errorContainer = document.getElementById('error');
-    if (errorContainer) {
-        errorContainer.textContent = message;
-        errorContainer.style.display = 'block';
-    } else {
-        console.error('Error container not found');
-    }
-}
-
-function viewDetails(type, id) {
-    // Implementation to show details based on type and id
 }
