@@ -8,7 +8,7 @@ if (searchForm) {
         const query = document.getElementById('searchQuery').value;
         const type = document.getElementById('searchType').value;
         const quality = document.getElementById('searchQuality').value;
-        
+
         showLoading(true);
         try {
             const results = await searchTidal(query, type, quality);
@@ -50,7 +50,7 @@ async function fetchWithCORS(url) {
         });
         return response;
     } catch (error) {
-        console.error("CORS error, trying with proxy:", error);
+        console.error("CORS error, trying with proxy:", error.message);
         return await fetch(CORS_PROXY + url, {
             headers: {
                 'Accept': 'application/json',
@@ -76,7 +76,7 @@ function displayResults(results, type) {
     results.forEach(item => {
         const resultItem = document.createElement('div');
         resultItem.className = 'result-item';
-        
+
         let content = `
             <h2>${item.title || item.name}</h2>
         `;
@@ -104,4 +104,27 @@ function displayResults(results, type) {
         resultItem.innerHTML = content;
         resultsContainer.appendChild(resultItem);
     });
+}
+
+function showLoading(show) {
+    const loadingIndicator = document.querySelector('.loading');
+    if (loadingIndicator) {
+        loadingIndicator.style.display = show ? 'inline-block' : 'none';
+    } else {
+        console.error('Loading indicator not found');
+    }
+}
+
+function displayError(message) {
+    const errorContainer = document.getElementById('error');
+    if (errorContainer) {
+        errorContainer.textContent = message;
+        errorContainer.style.display = 'block';
+    } else {
+        console.error('Error container not found');
+    }
+}
+
+function viewDetails(type, id) {
+    // Implementation to show details based on type and id
 }
