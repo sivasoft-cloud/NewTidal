@@ -3,7 +3,6 @@
     "env": {
       "API_BASE": "https://tidal.401658.xyz"
     },
-    "install": "pip install -r requirements.txt",
     "start": "flask run --host 0.0.0.0 --port $PORT"
   },
   "routes": [
