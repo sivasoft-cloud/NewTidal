@@ -10,16 +10,16 @@
 <body>
     <div class="container">
         <h1>Tidal Music Search</h1>
-        <form id="searchForm">
-            <input type="text" id="searchQuery" placeholder="Enter your search query" required>
-            <select id="searchType">
+        <form method="POST" id="searchForm">
+            <input type="text" name="searchQuery" placeholder="Enter your search query" required>
+            <select name="searchType">
                 <option value="s">Song</option>
                 <option value="a">Artist</option>
                 <option value="al">Album</option>
                 <option value="v">Video</option>
                 <option value="p">Playlist</option>
             </select>
-            <select id="searchQuality">
+            <select name="searchQuality">
                 <option value="HI_RES_LOSSLESS">Hi-Res Lossless</option>
                 <option value="HI_RES">Hi-Res</option>
                 <option value="LOSSLESS">Lossless</option>
@@ -28,8 +28,28 @@
             </select>
             <button type="submit">Search</button>
         </form>
-        <div id="error" class="error"></div>
-        <div id="results"></div>
+
+        {% if results %}
+            <div id="results">
+                {% for item in results %}
+                    <div class="result-item">
+                        <h2>{{ item.title or item.name }}</h2>
+                        <p>Artist: {{ item.artist.name if item.artist else 'N/A' }}</p>
+                        <p>Album: {{ item.album.title if item.album else 'N/A' }}</p>
+                        <p>Duration: {{ item.duration }}</p>
+                        <p>Quality: {{ item.audioQuality if item.audioQuality else 'N/A' }}</p>
+                        {% if item.explicit %}
+                            <p class="explicit">Explicit</p>
+                        {% endif %}
+                        <button onclick="viewDetails('{{ search_type }}', {{ item.id }})">View Details</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div id="results">
+                <p>No results found.</p>
+            </div>
+        {% endif %}
     </div>
     <script src="/static/script.js" defer></script>
 </body>
