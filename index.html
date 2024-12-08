@@ -3,32 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tidal Music Search</title>
+    <title>Tidal Search</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Tidal Music Search</h1>
+        <h1>Tidal Search</h1>
         <form id="searchForm">
-            <input type="text" id="searchQuery" placeholder="Enter your search query" required>
+            <input type="text" id="searchQuery" placeholder="Search for music, album, artist..." required>
             <select id="searchType">
-                <option value="s">Song</option>
+                <option value="s">Songs</option>
                 <option value="a">Artist</option>
                 <option value="al">Album</option>
                 <option value="v">Video</option>
                 <option value="p">Playlist</option>
             </select>
             <select id="searchQuality">
-                <option value="HI_RES_LOSSLESS">Hi-Res Lossless</option>
                 <option value="HI_RES">Hi-Res</option>
                 <option value="LOSSLESS">Lossless</option>
                 <option value="HIGH">High</option>
-                <option value="LOW">Low</option>
+                <option value="NORMAL">Normal</option>
             </select>
             <button type="submit">Search</button>
         </form>
-        <div id="loading" class="loading">Searching...</div>
-        <div id="results"></div>
+        <div id="loading" class="loading">Loading...</div>
+        <div id="results" class="results"></div>
     </div>
     <script src="script.js"></script>
 </body>
