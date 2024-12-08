@@ -3,21 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music Search</title>
+    <title>HIFI TUI Song Downloader</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Music Search</h1>
-        <form id="search-form">
-            <input type="text" id="search-query" placeholder="Search for music">
-            <button type="submit">Search</button>
-        </form>
-        <div id="results"></div>
-        <div id="loading" class="loading"></div>
-        <div id="error" class="error"></div>
+        <header>
+            <h1>HIFI TUI Song Downloader</h1>
+        </header>
+        <main>
+            <section id="search-section">
+                <input type="text" id="search-input" placeholder="Search for songs, albums, artists...">
+                <button id="search-button">Search</button>
+            </section>
+            <section id="results-section">
+                <h2>Search Results</h2>
+                <ul id="results-list"></ul>
+            </section>
+        </main>
+        <footer>
+            <p>&copy; 2024 HIFI TUI</p>
+        </footer>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
