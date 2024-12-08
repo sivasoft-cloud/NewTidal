@@ -5,7 +5,7 @@ document.getElementById('searchForm').addEventListener('submit', async (e) => {
     const query = document.getElementById('searchQuery').value;
     const type = document.getElementById('searchType').value;
     const quality = document.getElementById('searchQuality').value;
-    
+
     showLoading(true);
     try {
         const results = await searchTidal(query, type, quality);
@@ -17,40 +17,7 @@ document.getElementById('searchForm').addEventListener('submit', async (e) => {
     }
 });
 
-async function searchTidal(query, type = 's', quality = 'HI_RES') {
-    try {
-        const response = await fetch(`${API_BASE}/search/?${type}=${encodeURIComponent(query)}`, {
-            headers: {
-                'Accept': 'application/json',
-                'Origin': window.location.origin
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        return data.items || [];
-    } catch (error) {
-        console.error("Search failed:", error);
-        throw new Error("Failed to fetch search results. Please try again later.");
-    }
-}
-
-async function getTrackDetails(trackId, quality = 'HI_RES') {
-    return await fetchWithErrorHandling(`${API_BASE}/track/?id=${trackId}&quality=${quality}`);
-}
-
-async function getCoverImage(id) {
-    const data = await fetchWithErrorHandling(`${API_BASE}/cover/?id=${id}`);
-    return data.url;
-}
-
-async function getAlbumDetails(albumId) {
-    return await fetchWithErrorHandling(`${API_BASE}/album/?id=${albumId}`);
-}
-
-async function fetchWithErrorHandling(url) {
+async function fetchData(url) {
     try {
         const response = await fetch(url, {
             headers: {
@@ -58,6 +25,7 @@ async function fetchWithErrorHandling(url) {
                 'Origin': window.location.origin
             }
         });
+
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -66,6 +34,26 @@ async function fetchWithErrorHandling(url) {
         console.error("API call failed:", error);
         throw new Error("Failed to fetch data. Please try again later.");
     }
+}
+
+async function searchTidal(query, type = 's', quality = 'HI_RES') {
+    const url = `${API_BASE}/search/?${type}=${encodeURIComponent(query)}`;
+    return await fetchData(url);
+}
+
+async function getTrackDetails(trackId, quality = 'HI_RES') {
+    const url = `${API_BASE}/track/?id=${trackId}&quality=${quality}`;
+    return await fetchData(url);
+}
+
+async function getCoverImage(id) {
+    const data = await fetchData(`${API_BASE}/cover/?id=${id}`);
+    return data.url;
+}
+
+async function getAlbumDetails(albumId) {
+    const url = `${API_BASE}/album/?id=${albumId}`;
+    return await fetchData(url);
 }
 
 function displayResults(results, type) {
@@ -80,7 +68,7 @@ function displayResults(results, type) {
     results.forEach(item => {
         const resultItem = document.createElement('div');
         resultItem.className = 'result-item';
-        
+
         let content = `
             <h2>${item.title || item.name}</h2>
         `;
