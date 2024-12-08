@@ -8,29 +8,32 @@
 </head>
 <body>
     <div class="container">
-        <h1>Tidal Music Search</h1>
-        <form id="searchForm">
-            <input type="text" id="searchQuery" placeholder="Enter your search query" required>
-            <select id="searchType">
-                <option value="s">Song</option>
-                <option value="a">Artist</option>
-                <option value="al">Album</option>
-                <option value="v">Video</option>
-                <option value="p">Playlist</option>
-            </select>
-            <select id="searchQuality">
-                <option value="HI_RES_LOSSLESS">Hi-Res Lossless</option>
-                <option value="HI_RES">Hi-Res</option>
-                <option value="LOSSLESS">Lossless</option>
-                <option value="HIGH">High</option>
-                <option value="LOW">Low</option>
-            </select>
-            <button type="submit">Search</button>
-        </form>
-        <div id="loading" class="loading">Searching...</div>
-        <div id="results"></div>
+        <header>
+            <h1>Tidal Music Search</h1>
+        </header>
+        <main>
+            <form id="searchForm" class="search-form">
+                <input type="text" id="searchQuery" placeholder="Enter your search query" required>
+                <select id="searchType">
+                    <option value="s">Song</option>
+                    <option value="a">Artist</option>
+                    <option value="al">Album</option>
+                    <option value="v">Video</option>
+                    <option value="p">Playlist</option>
+                </select>
+                <select id="searchQuality">
+                    <option value="HI_RES_LOSSLESS">Hi-Res Lossless</option>
+                    <option value="HI_RES">Hi-Res</option>
+                    <option value="LOSSLESS">Lossless</option>
+                    <option value="HIGH">High</option>
+                    <option value="LOW">Low</option>
+                </select>
+                <button type="submit">Search</button>
+            </form>
+            <div id="loading" class="loading hidden">Searching...</div>
+            <div id="results" class="results"></div>
+        </main>
     </div>
     <script src="script.js"></script>
 </body>
 </html>
-
