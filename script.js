@@ -1,4 +1,5 @@
 const API_BASE = "https://tidal.401658.xyz";
+const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
 
 document.getElementById('searchForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -6,17 +7,20 @@ document.getElementById('searchForm').addEventListener('submit', async (e) => {
     const type = document.getElementById('searchType').value;
     const quality = document.getElementById('searchQuality').value;
     
+    showLoading(true);
     try {
         const results = await searchTidal(query, type, quality);
         displayResults(results, type);
     } catch (error) {
         displayError(error.message);
+    } finally {
+        showLoading(false);
     }
 });
 
 async function searchTidal(query, type = 's', quality = 'HI_RES') {
     try {
-        const response = await fetch(`${API_BASE}/search/?${type}=${encodeURIComponent(query)}`);
+        const response = await fetchWithCORS(`${API_BASE}/search/?${type}=${encodeURIComponent(query)}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -43,7 +47,7 @@ async function getAlbumDetails(albumId) {
 
 async function fetchWithErrorHandling(url) {
     try {
-        const response = await fetch(url);
+        const response = await fetchWithCORS(url);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -51,6 +55,26 @@ async function fetchWithErrorHandling(url) {
     } catch (error) {
         console.error("API call failed:", error);
         throw new Error("Failed to fetch data. Please try again later.");
+    }
+}
+
+async function fetchWithCORS(url) {
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'Accept': 'application/json',
+                'Origin': window.location.origin
+            }
+        });
+        return response;
+    } catch (error) {
+        console.error("CORS error, trying with proxy:", error);
+        return await fetch(CORS_PROXY + url, {
+            headers: {
+                'Accept': 'application/json',
+                'Origin': window.location.origin
+            }
+        });
     }
 }
 
@@ -104,6 +128,7 @@ function formatDuration(duration) {
 }
 
 async function viewDetails(type, id) {
+    showLoading(true);
     try {
         let details;
         let coverUrl;
@@ -121,6 +146,8 @@ async function viewDetails(type, id) {
         displayDetailView(type, details, coverUrl);
     } catch (error) {
         displayError(error.message);
+    } finally {
+        showLoading(false);
     }
 }
 
@@ -174,5 +201,10 @@ function goBackToSearch() {
 function displayError(message) {
     const resultsContainer = document.getElementById('results');
     resultsContainer.innerHTML = `<div class="error">${message}</div>`;
+}
+
+function showLoading(isLoading) {
+    const loadingElement = document.getElementById('loading');
+    loadingElement.style.display = isLoading ? 'block' : 'none';
 }
 
