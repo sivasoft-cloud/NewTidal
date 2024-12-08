@@ -3,13 +3,11 @@ const API_BASE = "https://tidal.401658.xyz";
 document.getElementById('searchForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const query = document.getElementById('searchQuery').value;
-    const type = document.getElementById('searchType').value;
-    const quality = document.getElementById('searchQuality').value;
-    
+
     showLoading(true);
     try {
-        const results = await searchTidal(query, type, quality);
-        displayResults(results, type);
+        const results = await searchTidal(query, 's', 'HI_RES');
+        displaySongResults(results);
     } catch (error) {
         displayError(error.message);
     } finally {
@@ -18,36 +16,26 @@ document.getElementById('searchForm').addEventListener('submit', async (e) => {
 });
 
 async function searchTidal(query, type = 's', quality = 'HI_RES') {
-    let url;
-    switch(type) {
-        case 's':
+    try {
+        let url;
+        if (type === 's') {
             url = `${API_BASE}/search/?s=${encodeURIComponent(query)}`;
-            break;
-        case 'a':
-            url = `${API_BASE}/search/?a=${encodeURIComponent(query)}`;
-            break;
-        case 'al':
-            url = `${API_BASE}/search/?al=${encodeURIComponent(query)}`;
-            break;
-        case 'v':
-            url = `${API_BASE}/search/?v=${encodeURIComponent(query)}`;
-            break;
-        case 'p':
-            url = `${API_BASE}/search/?p=${encodeURIComponent(query)}`;
-            break;
-        default:
+        } else {
             throw new Error("Unsupported search type");
+        }
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data.items || [];
+    } catch (error) {
+        console.error("Search failed:", error);
+        throw new Error("Failed to fetch search results. Please try again later.");
     }
-    
-    const response = await fetch(url);
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data.items || [];
 }
 
-function displayResults(results, type) {
+function displaySongResults(results) {
     const resultsContainer = document.getElementById('results');
     resultsContainer.innerHTML = '';
 
@@ -56,19 +44,17 @@ function displayResults(results, type) {
         return;
     }
 
-    results.forEach(item => {
+    results.forEach(song => {
         const resultItem = document.createElement('div');
         resultItem.className = 'result-item';
-        
-        let content = `
-            <h2>${item.title || item.name}</h2>
-            <p>Artist: ${item.artist?.name || 'N/A'}</p>
-            <p>Duration: ${formatDuration(item.duration)}</p>
-            <p>Quality: ${item.audioQuality || 'N/A'}</p>
-            <a href="${item.url}" target="_blank">Listen on Tidal</a>
+        resultItem.innerHTML = `
+            <h2>${song.title}</h2>
+            <p>Artist: ${song.artist.name}</p>
+            <p>Album: ${song.album.title}</p>
+            <p>Duration: ${formatDuration(song.duration)}</p>
+            <p>Quality: ${song.audioQuality}</p>
+            <p><a href="${song.url}" target="_blank">Listen on Tidal</a></p>
         `;
-        
-        resultItem.innerHTML = content;
         resultsContainer.appendChild(resultItem);
     });
 }
